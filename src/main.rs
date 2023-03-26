@@ -22,6 +22,7 @@ use axum::{
     Json, Router,
 };
 use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::{
     collections::HashMap,
     net::SocketAddr,
@@ -103,14 +104,15 @@ async fn todos_index(
 
 #[derive(Debug, Deserialize)]
 struct CreateTodo {
-    text: String,
+    subject: String,
 }
 
 async fn todos_create(State(db): State<Db>, Json(input): Json<CreateTodo>) -> impl IntoResponse {
     let todo = Todo {
         id: Uuid::new_v4(),
-        text: input.text,
+        subject: input.subject,
         completed: false,
+        status: Status::ToDo,
     };
 
     db.write().unwrap().insert(todo.id, todo.clone());
@@ -120,8 +122,9 @@ async fn todos_create(State(db): State<Db>, Json(input): Json<CreateTodo>) -> im
 
 #[derive(Debug, Deserialize)]
 struct UpdateTodo {
-    text: Option<String>,
+    subject: Option<String>,
     completed: Option<bool>,
+    status: Option<Status>,
 }
 
 async fn todos_update(
@@ -136,12 +139,16 @@ async fn todos_update(
         .cloned()
         .ok_or(StatusCode::NOT_FOUND)?;
 
-    if let Some(text) = input.text {
-        todo.text = text;
+    if let Some(subject) = input.subject {
+        todo.subject = subject;
     }
 
     if let Some(completed) = input.completed {
         todo.completed = completed;
+    }
+
+    if let Some(status) = input.status {
+        todo.status = status
     }
 
     db.write().unwrap().insert(todo.id, todo.clone());
@@ -159,9 +166,20 @@ async fn todos_delete(Path(id): Path<Uuid>, State(db): State<Db>) -> impl IntoRe
 
 type Db = Arc<RwLock<HashMap<Uuid, Todo>>>;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct Todo {
     id: Uuid,
-    text: String,
+    subject: String,
     completed: bool,
+    status: Status,
+}
+
+#[derive(Debug, Serialize_repr, Deserialize_repr, PartialEq, Clone)]
+#[repr(u8)]
+enum Status {
+    ToDo,
+    InProgress,
+    Review,
+    Wait,
+    Done,
 }

@@ -10,18 +10,19 @@ POST {{baseurl}}/todos
 content-type: application/json
 
 {
-    "text": "Test"
+    "subject": "Test"
 }
 
 ### PUT /todos/:id
-PUT {{baseurl}}/todos/uuid
+PUT {{baseurl}}/todos/{{id}}
 content-type: application/json
 
 {
-    "text": "Test2",
-    "completed": true
+    "subject": "Test2",
+    "completed": true,
+    "status": 5
 }
 
 
 ### DELETE /todos/:id
-DELETE {{baseurl}}/todos/uuid
+DELETE {{baseurl}}/todos/{{id}}
