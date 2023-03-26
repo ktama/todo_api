@@ -1,0 +1,27 @@
+
+@baseurl = http://127.0.0.1:3000
+@id = 1
+
+### GET /todos
+GET {{baseurl}}/todos
+
+### POST /todos
+POST {{baseurl}}/todos
+content-type: application/json
+
+{
+    "text": "Test"
+}
+
+### PUT /todos/:id
+PUT {{baseurl}}/todos/uuid
+content-type: application/json
+
+{
+    "text": "Test2",
+    "completed": true
+}
+
+
+### DELETE /todos/:id
+DELETE {{baseurl}}/todos/uuid
